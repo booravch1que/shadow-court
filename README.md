@@ -21,6 +21,10 @@ pnpm start        # http://localhost:3000
 
 Docker: `docker build -t shadow-court . && docker run -p 3000:3000 shadow-court`.
 
+Render: `render.yaml` is a Blueprint for one free Docker web service. In the Render dashboard choose
+New → Blueprint and pick this repository. The free plan sleeps after 15 minutes without traffic,
+which ends any rooms left in memory; the first visit after that takes about a minute to wake it.
+
 Other checks: `pnpm typecheck`, `pnpm lint`, `pnpm test`.
 
 ## Configuration
