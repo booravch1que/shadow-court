@@ -4,6 +4,7 @@ import { deriveStatus, relationOf } from '../logic/ui-state';
 import { Hand } from '../components/Hand';
 import { Banner, ControlPanel } from '../components/Panels';
 import { EmoteBar, EmoteFloat, Log, TimerBar } from '../components/Chrome';
+import { FxLayer } from '../components/Fx';
 import { Table } from '../components/Table';
 import { End } from './End';
 
@@ -42,6 +43,7 @@ export function Game() {
       </aside>
 
       <EmoteFloat />
+      <FxLayer />
       {over && <End view={view} />}
     </main>
   );

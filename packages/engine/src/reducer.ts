@@ -16,6 +16,7 @@ import {
   isAlive,
   livingIdsExcept,
   livingPlayers,
+  respondersNow,
 } from './rules';
 import type {
   ActionType,
@@ -207,12 +208,15 @@ function windowComplete(phase: ResponseWindowPhase): boolean {
   return phase.eligible.every((id) => phase.passed.includes(id));
 }
 
-function checkResponder(phase: ResponseWindowPhase, player: PlayerState): EngineError | null {
+function checkResponder(s: GameState, phase: ResponseWindowPhase, player: PlayerState): EngineError | null {
   if (!phase.eligible.includes(player.id)) {
     return fail('not_eligible', 'You cannot respond to this.');
   }
   if (phase.passed.includes(player.id)) {
     return fail('already_responded', 'You already passed. A pass is final.');
+  }
+  if (!respondersNow(s.players, phase, s.sequentialReactions ?? false).includes(player.id)) {
+    return fail('not_your_turn', 'Wait until it is your turn to respond.');
   }
   return null;
 }
@@ -220,7 +224,7 @@ function checkResponder(phase: ResponseWindowPhase, player: PlayerState): Engine
 function handlePass(s: GameState, player: PlayerState, ev: Events): EngineError | null {
   const phase = s.phase;
   if (!isResponseWindow(phase)) return fail('wrong_phase', 'There is nothing to pass on.');
-  const error = checkResponder(phase, player);
+  const error = checkResponder(s, phase, player);
   if (error) return error;
 
   phase.passed.push(player.id);
@@ -266,7 +270,7 @@ function handleChallenge(s: GameState, challenger: PlayerState, ev: Events): Eng
   } else {
     return fail('wrong_phase', 'There is nothing to challenge right now.');
   }
-  const error = checkResponder(phase, challenger);
+  const error = checkResponder(s, phase, challenger);
   if (error) return error;
 
   resolveChallenge(s, phase.pending, challenger, getPlayer(s, accusedId), role, context, ev);
@@ -357,7 +361,7 @@ function handleBlock(
 ): EngineError | null {
   const phase = s.phase;
   if (phase.type !== 'blockWindow') return fail('wrong_phase', 'There is nothing to block right now.');
-  const error = checkResponder(phase, blocker);
+  const error = checkResponder(s, phase, blocker);
   if (error) return error;
   if (!ACTION_RULES[phase.pending.action].blockedBy.includes(command.role)) {
     return fail('invalid_block', `${command.role} cannot block this action.`);
@@ -660,14 +664,13 @@ function handleTimeout(
     case 'challengeWindow':
     case 'blockWindow':
     case 'blockChallengeWindow':
-      // Everybody who has not answered passes.
-      for (const id of phase.eligible) {
-        if (!phase.passed.includes(id)) {
-          phase.passed.push(id);
-          ev.push({ type: 'passed', playerId: id, auto: true });
-        }
+      // Everybody being waited for passes. Sequentially that is one player, and the
+      // window moves on to the next one (with a fresh timer from the server).
+      for (const id of respondersNow(s.players, phase, s.sequentialReactions ?? false)) {
+        phase.passed.push(id);
+        ev.push({ type: 'passed', playerId: id, auto: true });
       }
-      closeWindowPassed(s, ev);
+      if (windowComplete(phase)) closeWindowPassed(s, ev);
       return null;
 
     case 'influenceLoss': {

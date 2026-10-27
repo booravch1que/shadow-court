@@ -96,6 +96,16 @@ export function Lobby() {
           />
           <span>{t('lobby.allowSpectators')}</span>
         </label>
+        <label className="check">
+          <input
+            type="checkbox"
+            disabled={!isHost}
+            checked={room.settings.sequentialReactions}
+            onChange={(e) => app.updateSettings({ sequentialReactions: e.target.checked })}
+          />
+          <span>{t('lobby.sequential')}</span>
+        </label>
+        <span className="field-hint">{t('lobby.sequential.hint')}</span>
       </section>
 
       <div className="lobby-actions">

@@ -61,6 +61,10 @@ export interface AppEnv {
   onUrlChange?: (code: string | null) => void;
   /** Called with sound cues when the player has sound turned on. */
   onCue?: (cues: SoundCue[]) => void;
+  /** Called with every batch of new game events, for animations. */
+  onEvents?: (events: GameEvent[]) => void;
+  /** Called right after a new game view has been stored. */
+  onView?: () => void;
   browserLanguage?: string;
   initialInvite?: string;
 }
@@ -130,6 +134,7 @@ export class AppController {
       case 'game:view': {
         const { deadline, now, view } = message.data;
         this.store.set({ view, deadlineAt: deadline === null ? null : this.env.now() + (deadline - now) });
+        this.env.onView?.();
         return;
       }
       case 'game:events':
@@ -172,6 +177,7 @@ export class AppController {
     entries.push(...fresh);
     this.store.set({ log: [...state.log, ...entries].slice(-MAX_LOG) });
 
+    this.env.onEvents?.(fresh.map((e) => e.event));
     if (state.sound) this.env.onCue?.(soundCues(fresh.map((e) => e.event)));
   }
 

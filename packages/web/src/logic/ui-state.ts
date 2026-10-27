@@ -1,4 +1,4 @@
-import { ACTION_RULES, type ActionType, type GameView, type LossReason, type PlayerId, type Role } from '@shadow-court/engine';
+import { ACTION_RULES, respondersNow, type ActionType, type GameView, type LossReason, type PlayerId, type Role } from '@shadow-court/engine';
 
 /**
  * What the screen should be about right now, from this viewer's point of view.
@@ -81,7 +81,7 @@ export function deriveStatus(view: GameView): UiStatus {
         mode,
         claim,
         passed: [...phase.passed],
-        waitingOn: phase.eligible.filter((id) => !phase.passed.includes(id)),
+        waitingOn: respondersNow(view.players, phase, view.sequentialReactions),
       };
     }
 

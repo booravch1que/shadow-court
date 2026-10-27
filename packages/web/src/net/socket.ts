@@ -11,6 +11,8 @@ interface ViteEnv {
 export function startApp(options: {
   onCue?: ConstructorParameters<typeof AppController>[0]['onCue'];
   onUrlChange?: ConstructorParameters<typeof AppController>[0]['onUrlChange'];
+  onEvents?: ConstructorParameters<typeof AppController>[0]['onEvents'];
+  onView?: ConstructorParameters<typeof AppController>[0]['onView'];
 } = {}): AppController {
   const serverUrl = (import.meta as unknown as ViteEnv).env?.['VITE_SERVER_URL'];
   const socket = serverUrl ? io(serverUrl) : io();
@@ -25,6 +27,8 @@ export function startApp(options: {
     initialInvite: params.get('join') ?? '',
     onCue: options.onCue,
     onUrlChange: options.onUrlChange,
+    onEvents: options.onEvents,
+    onView: options.onView,
   });
 
   socket.on('connect', () => app.handleStatus('online'));

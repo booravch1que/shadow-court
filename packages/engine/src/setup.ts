@@ -20,6 +20,8 @@ export interface CreateGameOptions {
   randomizeSeating?: boolean;
   /** Who plays first. Defaults to the first seat. */
   firstPlayerId?: PlayerId;
+  /** Ask reaction windows one player at a time, clockwise. Defaults to false. */
+  sequentialReactions?: boolean;
 }
 
 export function createGame(options: CreateGameOptions): { state: GameState; events: GameEvent[] } {
@@ -71,6 +73,7 @@ export function createGame(options: CreateGameOptions): { state: GameState; even
     phase: { type: 'awaitingAction', windowId: 1 },
     windowCounter: 1,
     rng: box.rng,
+    sequentialReactions: options.sequentialReactions ?? false,
   };
 
   const events: GameEvent[] = [

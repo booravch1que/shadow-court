@@ -59,6 +59,8 @@ describe('parseClientMessage', () => {
     assert.equal(parse('lobby:settings', { timerPreset: 'fast', allowSpectators: false }).ok, true);
     assert.equal(parse('lobby:settings', { timerPreset: 'turbo' }).ok, false);
     assert.equal(parse('lobby:settings', { allowSpectators: 'yes' }).ok, false);
+    assert.equal(parse('lobby:settings', { sequentialReactions: true }).ok, true);
+    assert.equal(parse('lobby:settings', { sequentialReactions: 1 }).ok, false);
   });
 
   it('validates emotes', () => {

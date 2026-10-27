@@ -49,7 +49,7 @@ export interface ClientPayloads {
   'room:join': { code: string; nickname: string };
   'room:rejoin': { code: string; token: string };
   'room:leave': Record<string, never>;
-  'lobby:settings': { timerPreset?: TimerPreset; allowSpectators?: boolean };
+  'lobby:settings': { timerPreset?: TimerPreset; allowSpectators?: boolean; sequentialReactions?: boolean };
   'lobby:start': Record<string, never>;
   'room:kick': { playerId: PlayerId };
   'game:command': { command: ClientCommand };
@@ -73,6 +73,8 @@ export type ParticipantKind = 'player' | 'spectator';
 export interface RoomSettings {
   timerPreset: TimerPreset;
   allowSpectators: boolean;
+  /** Reactions are asked one player at a time, clockwise, instead of all at once. */
+  sequentialReactions: boolean;
 }
 
 export interface PublicParticipant {

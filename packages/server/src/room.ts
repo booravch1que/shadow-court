@@ -2,6 +2,7 @@ import {
   createGame,
   projectView,
   reduce,
+  respondersNow,
   type GameEvent,
   type GameState,
   type PlayerCommand,
@@ -52,7 +53,7 @@ export interface RoomHooks {
  */
 export class Room {
   status: RoomStatus = 'lobby';
-  settings: RoomSettings = { timerPreset: 'standard', allowSpectators: true };
+  settings: RoomSettings = { timerPreset: 'standard', allowSpectators: true, sequentialReactions: false };
 
   private readonly participants = new Map<PlayerId, Participant>();
   private readonly byToken = new Map<string, PlayerId>();
@@ -248,6 +249,7 @@ export class Room {
     const { state, events } = createGame({
       playerIds: seated.map((p) => p.id),
       seed: this.deps.random.int(2 ** 32),
+      sequentialReactions: this.settings.sequentialReactions,
     });
     this.status = 'playing';
     this.commit(state, events);
@@ -340,7 +342,7 @@ export class Room {
       case 'blockWindow':
       case 'blockChallengeWindow':
         base = cfg.reactionMs;
-        awaited = phase.eligible.filter((id) => !phase.passed.includes(id));
+        awaited = respondersNow(game.players, phase, game.sequentialReactions ?? false);
         break;
       case 'influenceLoss':
       case 'exchange':

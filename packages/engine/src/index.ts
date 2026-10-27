@@ -16,5 +16,13 @@ export {
   type PublicPhase,
   type PublicPlayer,
 } from './view';
-export { coinRoom, isAlive, isMandatoryCoup, livingPlayers, findPlayer } from './rules';
+export {
+  claimantOf,
+  coinRoom,
+  findPlayer,
+  isAlive,
+  isMandatoryCoup,
+  livingPlayers,
+  respondersNow,
+} from './rules';
 export { nextRandom, randomInt, shuffle, type RngBox } from './rng';

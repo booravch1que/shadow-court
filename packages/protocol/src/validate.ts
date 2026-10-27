@@ -150,7 +150,7 @@ export function parseClientMessage(event: unknown, payload: unknown): Parsed<Cli
     case 'room:playAgain':
       return ok({ event, data: {} });
     case 'lobby:settings': {
-      const out: { timerPreset?: TimerPreset; allowSpectators?: boolean } = {};
+      const out: { timerPreset?: TimerPreset; allowSpectators?: boolean; sequentialReactions?: boolean } = {};
       if (data['timerPreset'] !== undefined) {
         const preset = data['timerPreset'];
         if (typeof preset !== 'string' || !(TIMER_PRESETS as readonly string[]).includes(preset)) {
@@ -161,6 +161,10 @@ export function parseClientMessage(event: unknown, payload: unknown): Parsed<Cli
       if (data['allowSpectators'] !== undefined) {
         if (typeof data['allowSpectators'] !== 'boolean') return bad('allowSpectators must be true or false.');
         out.allowSpectators = data['allowSpectators'];
+      }
+      if (data['sequentialReactions'] !== undefined) {
+        if (typeof data['sequentialReactions'] !== 'boolean') return bad('sequentialReactions must be true or false.');
+        out.sequentialReactions = data['sequentialReactions'];
       }
       return ok({ event, data: out });
     }

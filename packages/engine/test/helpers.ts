@@ -27,6 +27,8 @@ export interface BuildOptions {
   /** Cards that must sit on top of the deck, first element on top. */
   deckTop?: Role[];
   seed?: number;
+  /** Reaction windows ask one player at a time. */
+  sequential?: boolean;
 }
 
 /** Builds a valid mid-game state from a compact description. */
@@ -60,6 +62,7 @@ export function buildState(specs: PlayerSpec[], options: BuildOptions = {}): Gam
     phase: { type: 'awaitingAction', windowId: 1 },
     windowCounter: 1,
     rng: options.seed ?? 12345,
+    sequentialReactions: options.sequential ?? false,
   };
 }
 

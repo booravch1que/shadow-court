@@ -132,7 +132,9 @@ describe('lobby controls', () => {
     guest.send('lobby:settings', { timerPreset: 'fast' });
     assert.equal(guest.lastError?.code, 'not_host');
     host.send('lobby:settings', { timerPreset: 'fast', allowSpectators: false });
-    assert.deepEqual(guest.room.settings, { timerPreset: 'fast', allowSpectators: false });
+    assert.deepEqual(guest.room.settings, { timerPreset: 'fast', allowSpectators: false, sequentialReactions: false });
+    host.send('lobby:settings', { sequentialReactions: true });
+    assert.equal(guest.room.settings.sequentialReactions, true);
     host.send('lobby:start');
     host.send('lobby:settings', { timerPreset: 'relaxed' });
     assert.equal(host.lastError?.code, 'wrong_status');

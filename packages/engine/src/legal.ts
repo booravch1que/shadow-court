@@ -4,7 +4,15 @@ import {
   COUP_COST,
   MAX_CONSECUTIVE_SKIPS,
 } from './constants';
-import { coinRoom, findPlayer, isAlive, isMandatoryCoup, livingPlayers, phaseWindowId } from './rules';
+import {
+  coinRoom,
+  findPlayer,
+  isAlive,
+  isMandatoryCoup,
+  livingPlayers,
+  phaseWindowId,
+  respondersNow,
+} from './rules';
 import type { ActionType, Command, GameState, PlayerId, Role } from './types';
 
 /** One action the active player may declare, with its legal targets if any. */
@@ -90,12 +98,12 @@ export function getLegalMoves(state: GameState, playerId: PlayerId): LegalMoves 
       break;
     case 'challengeWindow':
     case 'blockChallengeWindow':
-      if (phase.eligible.includes(playerId) && !phase.passed.includes(playerId)) {
+      if (respondersNow(state.players, phase, state.sequentialReactions ?? false).includes(playerId)) {
         moves.react = { canChallenge: true, blockRoles: [], canPass: true };
       }
       break;
     case 'blockWindow':
-      if (phase.eligible.includes(playerId) && !phase.passed.includes(playerId)) {
+      if (respondersNow(state.players, phase, state.sequentialReactions ?? false).includes(playerId)) {
         moves.react = {
           canChallenge: false,
           blockRoles: [...ACTION_RULES[phase.pending.action].blockedBy],

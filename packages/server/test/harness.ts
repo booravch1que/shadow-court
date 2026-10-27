@@ -174,6 +174,7 @@ export interface SetupOptions {
   preset?: TimerPreset;
   seed?: number;
   start?: boolean;
+  sequential?: boolean;
   config?: Partial<ServerConfig>;
 }
 
@@ -194,6 +195,7 @@ export function setup(playerCount: number, options: SetupOptions = {}): Setup {
     clients.push(c);
   }
   if (options.preset) host.send('lobby:settings', { timerPreset: options.preset });
+  if (options.sequential) host.send('lobby:settings', { sequentialReactions: true });
   if (options.start ?? true) host.send('lobby:start');
   return { server, sched, clients, code };
 }
