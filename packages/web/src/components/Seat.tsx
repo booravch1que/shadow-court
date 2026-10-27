@@ -2,7 +2,8 @@ import type { PublicPlayer } from '@shadow-court/engine';
 import type { PublicParticipant } from '@shadow-court/protocol';
 import type { CSSProperties } from 'react';
 import { useT } from '../hooks';
-import { CardBack, CoinCount, RoleCard } from './Cards';
+import { CardBack, CoinCount } from './Cards';
+import { useLag } from './Fx';
 
 export interface SeatProps {
   player: PublicPlayer;
@@ -25,6 +26,10 @@ export interface SeatProps {
 export function Seat(props: SeatProps) {
   const { player, participant } = props;
   const t = useT();
+  const coinLag = useLag('coins', player.id);
+  const cardLag = useLag('cards', player.id);
+  const backs = Math.max(0, player.cardCount - cardLag);
+  const gone = Math.max(0, player.revealed.length - useLag('discard', player.id));
   const tags: { key: string; cls: string }[] = [];
   if (!player.alive) tags.push({ key: 'seat.out', cls: 'tag-out' });
   else {
@@ -48,21 +53,28 @@ export function Seat(props: SeatProps) {
     .join(' ');
 
   return (
-    <div className={classes} style={{ '--x': `${props.x}%`, '--y': `${props.y}%` } as CSSProperties} data-player={player.id}>
+    <div
+      className={classes}
+      style={{ '--x': `${props.x}%`, '--y': `${props.y}%` } as CSSProperties}
+      data-player={player.id}
+      data-fx={`seat:${player.id}`}
+    >
       <div className="seat-head">
         {participant?.isHost && <span className="crown" title={t('lobby.host')}>♛</span>}
         <span className="seat-name">{props.name}</span>
       </div>
-      <div className="seat-cards">
-        {Array.from({ length: player.cardCount }, (_, i) => (
+      <div className="seat-cards" data-fx={`cards:${player.id}`}>
+        {Array.from({ length: backs }, (_, i) => (
           <CardBack key={`b${i}`} size="sm" />
         ))}
-        {player.revealed.map((role, i) => (
-          <RoleCard key={`r${i}`} role={role} size="xs" state="lost" />
+        {Array.from({ length: gone }, (_, i) => (
+          <span key={`e${i}`} className="card-gone" title={t('card.lost')} />
         ))}
       </div>
       <div className="seat-foot">
-        <CoinCount value={player.coins} />
+        <span data-fx={`coins:${player.id}`}>
+          <CoinCount value={player.coins - coinLag} />
+        </span>
         {tags.map((tag) => (
           <span key={tag.key} className={`tag ${tag.cls}`}>
             {t(tag.key)}

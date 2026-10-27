@@ -138,6 +138,11 @@ export interface GameState {
   windowCounter: number;
   /** Internal PRNG state. PRIVATE. */
   rng: number;
+  /**
+   * Reaction windows ask one player at a time, clockwise from the claimant,
+   * instead of everyone at once. Absent means simultaneous.
+   */
+  sequentialReactions?: boolean;
 }
 
 // ---------------------------------------------------------------------------

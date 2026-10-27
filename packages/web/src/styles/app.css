@@ -254,6 +254,40 @@ ul, ol { padding: 0; list-style: none; }
 .role-chip-art { width: 100%; height: 100%; --role: currentColor; }
 @keyframes pop { from { transform: scale(.9); opacity: 0; } to { transform: none; opacity: 1; } }
 
+/* deck, bank and the lost cards in the middle of the table */
+.tabletop { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; width: 100%; max-width: 420px; }
+.pile { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; min-width: 56px; }
+.pile-stack { display: flex; align-items: center; height: 58px; }
+.pile-stack > .card-back + .card-back { margin-left: -34px; margin-top: -4px; }
+.pile-stack > .card-back:nth-child(3) { margin-top: -8px; }
+.bank-stack { padding-top: 12px; }
+.bank-stack .coin { width: 24px; height: 24px; filter: drop-shadow(0 2px 2px rgb(0 0 0 / 60%)); }
+.bank-stack .coin + .coin { margin-left: -14px; }
+.bank-stack .coin:nth-child(2n) { transform: translateY(-6px); }
+.pile-label { font-size: 11px; font-weight: 700; color: #8fb59f; text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
+.discard { flex: 1; min-width: 0; min-height: 58px; display: flex; align-items: center; justify-content: center; padding: 2px 6px; border-radius: 10px; border: 1px dashed rgb(143 181 159 / 35%); }
+.discard-card { display: inline-flex; animation: pop .3s ease; }
+.discard-card + .discard-card { margin-left: -14px; }
+.discard-card .card { box-shadow: 0 2px 6px rgb(0 0 0 / 60%); }
+.discard-empty { font-size: 11px; color: rgb(143 181 159 / 70%); text-align: center; }
+.card-gone { display: inline-block; width: 44px; height: 62px; border-radius: 10px; border: 2px dashed rgb(255 255 255 / 14%); }
+
+/* ---------- flying effects ---------- */
+.fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 45; overflow: hidden; }
+.fx-sprite { position: absolute; left: 0; top: 0; will-change: transform, opacity; opacity: 0; }
+.fx-center { transform: translate(-50%, -50%); perspective: 700px; }
+.fx-coin { display: block; width: 24px; height: 24px; filter: drop-shadow(0 3px 4px rgb(0 0 0 / 70%)); }
+.fx-steal { filter: drop-shadow(0 0 6px rgb(226 99 79 / 95%)) drop-shadow(0 3px 4px rgb(0 0 0 / 70%)); }
+.fx-card .card { box-shadow: 0 8px 18px rgb(0 0 0 / 70%); }
+.fx-flip { display: inline-grid; transform-style: preserve-3d; animation-name: fx-flip; animation-timing-function: ease-in-out; animation-fill-mode: forwards; animation-delay: 120ms; }
+.fx-face { grid-area: 1 / 1; display: inline-flex; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.fx-front { transform: rotateY(180deg); }
+@keyframes fx-flip { to { transform: rotateY(180deg); } }
+.fx-label { display: inline-block; white-space: nowrap; padding: 4px 12px; border-radius: 999px; font-weight: 800; font-size: 14px; color: #fff; background: var(--panel-2); border: 1px solid var(--line); box-shadow: 0 4px 14px rgb(0 0 0 / 60%); }
+.fx-tone-claim { background: #5b3a86; border-color: #8a62c0; }
+.fx-tone-good { background: #2f5a30; border-color: var(--good); }
+.fx-tone-bad { background: #7a2a22; border-color: var(--bad); }
+
 /* ---------- banner, timer, panels ---------- */
 .banner { padding: 10px 14px; border-radius: 12px; font-weight: 700; text-align: center; border: 1px solid var(--line); background: var(--panel); }
 .banner-myTurn { background: linear-gradient(#f0c866, var(--gold-2)); color: var(--ink); border-color: var(--gold); }
@@ -344,9 +378,9 @@ ul, ol { padding: 0; list-style: none; }
   .log-col { grid-column: 2; grid-row: 1 / span 2; display: flex; flex-direction: column; position: sticky; top: 60px; height: calc(100vh - 76px); }
   .log-toggle { display: none; }
   .log-col .log { display: block; margin: 0; flex: 1; max-height: none; min-height: 0; }
-  .table { display: block; height: min(46vh, 430px); min-height: 340px; padding: 0; border-radius: 0; background: none; border: 0; }
+  .table { display: block; height: min(54vh, 500px); min-height: 400px; padding: 0; border-radius: 0; background: none; border: 0; }
   .table-felt { display: block; position: absolute; inset: 6% 4%; border-radius: 50%; background: radial-gradient(ellipse at 50% 40%, #2a5a43, var(--felt-2) 75%); border: 10px solid #4a3318; box-shadow: inset 0 0 60px rgb(0 0 0 / 60%), var(--shadow); }
-  .table-center { position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%); width: 46%; order: 0; }
+  .table-center { position: absolute; left: 50%; top: 48%; transform: translate(-50%, -50%); width: 50%; order: 0; }
   .seat { position: absolute; left: var(--x); top: var(--y); transform: translate(-50%, -50%); flex: none; width: 150px; max-width: none; background: rgb(12 8 5 / 70%); }
   .seat-self { display: flex; }
   .seat-self .seat-cards { display: none; }

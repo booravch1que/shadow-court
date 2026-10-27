@@ -1,5 +1,12 @@
 import { COUP_COST, MAX_COINS } from './constants';
-import type { GameState, PlayerId, PlayerState } from './types';
+import type {
+  BlockChallengeWindowPhase,
+  BlockWindowPhase,
+  ChallengeWindowPhase,
+  GameState,
+  PlayerId,
+  PlayerState,
+} from './types';
 
 /** A player is alive while they still hold at least one hidden card. */
 export function isAlive(player: PlayerState): boolean {
@@ -23,6 +30,31 @@ export function livingPlayers(state: GameState): PlayerState[] {
 /** Ids of living players, in seating order, excluding `excludeId`. */
 export function livingIdsExcept(state: GameState, excludeId: PlayerId): PlayerId[] {
   return state.players.filter((p) => isAlive(p) && p.id !== excludeId).map((p) => p.id);
+}
+
+/** The player whose claim a reaction window is about: the blocker, or else the actor. */
+export function claimantOf(phase: ChallengeWindowPhase | BlockWindowPhase | BlockChallengeWindowPhase): PlayerId {
+  return phase.type === 'blockChallengeWindow' ? phase.block.blockerId : phase.pending.actorId;
+}
+
+/**
+ * Who may answer an open reaction window right now. Simultaneously that is
+ * everyone eligible who has not passed; sequentially it is only the first of
+ * them going clockwise from the claimant. `players` is in seating order.
+ */
+export function respondersNow(
+  players: readonly { id: PlayerId }[],
+  phase: ChallengeWindowPhase | BlockWindowPhase | BlockChallengeWindowPhase,
+  sequential: boolean,
+): PlayerId[] {
+  const waiting = phase.eligible.filter((id) => !phase.passed.includes(id));
+  if (!sequential) return waiting;
+  const from = players.findIndex((p) => p.id === claimantOf(phase));
+  for (let step = 1; step <= players.length; step++) {
+    const id = (players[(from + step) % players.length] as { id: PlayerId }).id;
+    if (waiting.includes(id)) return [id];
+  }
+  return [];
 }
 
 /** How many more coins this player can receive before hitting the cap. */

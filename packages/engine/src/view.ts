@@ -51,6 +51,8 @@ export interface GameView {
   phase: PublicPhase;
   /** True while the active player is obliged to Coup. */
   mandatoryCoup: boolean;
+  /** Reaction windows ask one player at a time, clockwise from the claimant. */
+  sequentialReactions: boolean;
   /** Private data; `null` for spectators. */
   me: { hand: Role[]; moves: LegalMoves } | null;
 }
@@ -83,6 +85,7 @@ export function projectView(state: GameState, viewerId: PlayerId | null): GameVi
     deckCount: state.deck.length,
     phase: structuredCopy(phase),
     mandatoryCoup: state.phase.type === 'awaitingAction' && isMandatoryCoup(state),
+    sequentialReactions: state.sequentialReactions ?? false,
     me: viewer ? { hand: [...viewer.hand], moves: getLegalMoves(state, viewer.id) } : null,
   };
 }

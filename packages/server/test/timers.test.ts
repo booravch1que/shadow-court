@@ -77,6 +77,25 @@ describe('reaction and card timers', () => {
     assert.equal(actor.view.players.find((p) => p.id === actor.selfId)?.coins, 5);
   });
 
+  it('sequential reactions: each player in turn gets a full 20 s', () => {
+    const { clients, sched } = setup(3, { sequential: true });
+    assert.equal(clients[0]?.view.sequentialReactions, true);
+    const actor = activeClient(clients);
+    actor.command({ type: 'declare', windowId: actor.windowId, action: 'tax' });
+    const asked = () => clients.filter((c) => c.view.me?.moves.react).map((c) => c.selfId);
+    assert.equal(asked().length, 1, 'only one player is asked at a time');
+    const first = asked()[0];
+
+    sched.advance(20 * SECOND);
+    assert.equal(actor.view.phase.type, 'challengeWindow', 'the window moves on to the next player');
+    assert.equal(asked().length, 1);
+    assert.notEqual(asked()[0], first);
+    assert.equal(actor.deadline, sched.now() + 20 * SECOND);
+
+    sched.advance(20 * SECOND);
+    assert.ok(actor.events.some((e) => e.event.type === 'actionResolved' && e.event.action === 'tax'));
+  });
+
   it('choosing a card to lose gets 30 s, then a random card is discarded', () => {
     // Play random legal moves (without letting time pass) until somebody must choose a card.
     const rand = mulberry(99);
