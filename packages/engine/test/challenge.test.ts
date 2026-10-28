@@ -48,6 +48,20 @@ describe('Challenging an action claim', () => {
     assert.deepEqual(g.phase.type === 'blockWindow' && g.phase.eligible, ['B', 'C']);
   });
 
+  it('the shown card goes to the bottom of the deck and the replacement comes from the top', () => {
+    const g = game(
+      [
+        { id: 'A', hand: ['governor', 'thief'] },
+        { id: 'B', hand: ['shaman', 'assassin'] },
+      ],
+      { deckTop: ['duchess'] },
+    );
+    g.declare('A', 'tax').challenge('B');
+    assert.deepEqual(g.player('A').hand, ['duchess', 'thief']);
+    assert.equal(g.state.deck.at(-1), 'governor', 'the shown card cannot be drawn straight back');
+    assertInvariants(g.state);
+  });
+
   it('a third party (not the target) may challenge', () => {
     const g = game([
       { id: 'A', hand: ['duchess', 'duchess'] },
@@ -56,7 +70,9 @@ describe('Challenging an action claim', () => {
     ]);
     g.declare('A', 'steal', 'B').challenge('C');
     assert.equal(g.eventsOfType('challenged')[0]?.challengerId, 'C');
-    assert.equal(g.phase.type, 'awaitingAction', 'A held two identical cards, so the loss was automatic');
+    assert.equal(g.phase.type === 'influenceLoss' && g.phase.playerId, 'A', 'identical cards still ask');
+    g.lose('A', 'duchess');
+    assert.equal(g.phase.type, 'awaitingAction');
   });
 
   it('the first challenge wins and later ones are rejected as stale', () => {
