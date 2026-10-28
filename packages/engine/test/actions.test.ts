@@ -124,11 +124,13 @@ describe('Coup', () => {
     assert.equal(g.state.activePlayerId, 'C', 'turn skips the eliminated player');
   });
 
-  it('does not ask for a choice when both cards are identical', () => {
+  it('still asks for a choice when both cards are identical, so the pair is not revealed', () => {
     const g = game([
       { id: 'A', hand: ['governor', 'thief'], coins: 7 },
       { id: 'B', hand: ['duchess', 'duchess'] },
     ]).declare('A', 'coup', 'B');
+    assert.equal(g.phase.type === 'influenceLoss' && g.phase.playerId, 'B');
+    g.lose('B', 'duchess');
     assert.equal(g.phase.type, 'awaitingAction');
     assert.deepEqual(g.player('B').hand, ['duchess']);
   });

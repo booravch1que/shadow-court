@@ -65,10 +65,11 @@ may challenge a role claim, whether or not they are involved in the action.
 
 - **Bluff caught** (accused does not hold the role): the accused loses one influence card of
   their choice, and the challenged action or block fails.
-- **Challenge fails** (accused holds the role): the accused shows the card, it goes back into
-  the deck, the deck is shuffled, and the accused draws a replacement. The challenger loses
+- **Challenge fails** (accused holds the role): the accused shows the card, draws a replacement
+  from the top of the deck, and the shown card goes to the bottom of the deck. The challenger loses
   one influence card of their choice. The action or block stands.
-- If the loser has a single card, or two identical cards, the card is lost automatically.
+- If the loser has a single card, it is lost automatically. With two identical cards the loser
+  still chooses, so the instant resolution does not reveal the pair.
 
 ## 4. Reaction order
 

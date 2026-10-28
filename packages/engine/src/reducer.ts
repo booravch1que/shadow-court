@@ -346,11 +346,11 @@ function resolveChallenge(
   }
 }
 
-/** Puts the card at `index` back into the deck, reshuffles, and deals a fresh one in its place. */
+/** Deals a fresh card from the top in place of the shown one, which goes to the bottom of the deck. */
 function replaceCard(s: GameState, player: PlayerState, index: number): void {
-  s.deck.push(player.hand[index] as Role);
-  shuffle(s, s.deck);
+  const shown = player.hand[index] as Role;
   player.hand[index] = s.deck.shift() as Role;
+  s.deck.push(shown);
 }
 
 function handleBlock(
@@ -504,9 +504,9 @@ function beginInfluenceLoss(
     proceed(s, next, ev);
     return;
   }
-  const distinct = new Set(player.hand);
-  if (distinct.size === 1) {
-    // No real choice (one card left, or two identical cards): lose it automatically.
+  if (player.hand.length === 1) {
+    // No real choice with one card left: lose it automatically. Two identical cards still ask,
+    // so the pause does not give the pair away.
     loseCard(s, player, player.hand[0] as Role, reason, ev);
     proceed(s, next, ev);
     return;
