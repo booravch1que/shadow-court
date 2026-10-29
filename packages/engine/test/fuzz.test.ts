@@ -12,6 +12,15 @@ import {
 } from '../src';
 import { assertInvariants } from './helpers';
 
+/** The deck is never reshuffled: cards only leave from the top and join at the bottom. */
+function keepsDeckOrder(before: readonly unknown[], after: readonly unknown[]): boolean {
+  for (let drawn = 0; drawn <= before.length; drawn++) {
+    const rest = before.slice(drawn);
+    if (rest.every((card, i) => after[i] === card)) return true;
+  }
+  return false;
+}
+
 /** Tiny independent PRNG for the bots, so they never touch the engine's own generator. */
 function botRng(seed: number): () => number {
   let a = seed >>> 0;
@@ -84,6 +93,10 @@ function playRandomGame(seed: number, playerCount: number, coverage: Coverage): 
     assert.ok(result.ok, `seed ${seed}: a legal ${command.type} was rejected: ${!result.ok && result.error.message}`);
     if (!result.ok) throw new Error('unreachable');
 
+    assert.ok(
+      keepsDeckOrder(state.deck, result.state.deck),
+      `seed ${seed}: ${command.type} reordered the deck instead of drawing from the top and adding to the bottom`,
+    );
     state = result.state;
     record(result.events, coverage);
     assertInvariants(state);

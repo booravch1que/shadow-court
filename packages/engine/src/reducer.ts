@@ -7,7 +7,7 @@ import {
   TAX_GAIN,
 } from './constants';
 import { legalDeclarations } from './legal';
-import { randomInt, shuffle } from './rng';
+import { randomInt } from './rng';
 import {
   coinRoom,
   deepClone,
@@ -607,9 +607,9 @@ function startExchange(s: GameState, actor: PlayerState, ev: Events): void {
   ev.push({ type: 'exchangeStarted', playerId: actor.id });
 }
 
+/** Puts returned cards at the bottom of the deck; the order of the rest of the deck is kept. */
 function returnToDeck(s: GameState, cards: Role[]): void {
   s.deck.push(...cards);
-  shuffle(s, s.deck);
 }
 
 /** True when `keep` is a sub-multiset of `options`. */

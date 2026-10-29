@@ -156,12 +156,17 @@ The engine uses a seeded PRNG (mulberry32) stored inside the game state, so ever
 exactly replayable in tests. It is not cryptographically secure, so **the server must seed
 each game from a secure source** (`crypto.randomInt` or similar).
 
+The deck is shuffled exactly once, when the game is set up. After that it is never reshuffled:
+cards are always drawn from the top, and cards going back (a shown card after a failed
+challenge, the Shaman's returned cards) go to the bottom in a fixed order.
+
 ## 9. Engine decisions not covered by the owner's answers
 
 These small decisions follow the accepted plan and can be changed:
 
 - The skip counter resets after any non-skip action.
-- Exchange with 1 card left draws 2 and keeps 1. The rest go back to the deck, reshuffled.
+- Exchange draws the top 2 cards of the deck. The cards not kept go to the bottom of the deck,
+  and the deck is not reshuffled. With 1 card left the player draws 2 and keeps 1.
 - A player cannot be both the actor and a responder in the same window.
 - Reaction windows exclude eliminated players; a player eliminated mid-window is dropped from it.
 
