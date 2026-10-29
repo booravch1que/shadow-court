@@ -48,6 +48,11 @@ export interface GameView {
   players: PublicPlayer[];
   /** Size of the draw pile. Its contents are never sent. */
   deckCount: number;
+  /**
+   * The draw pile from top to bottom as this viewer may know it: a role for each card shown to
+   * the table or put back by the viewer themselves, `null` for every other card.
+   */
+  deckMemory: (Role | null)[];
   phase: PublicPhase;
   /** True while the active player is obliged to Coup. */
   mandatoryCoup: boolean;
@@ -83,6 +88,10 @@ export function projectView(state: GameState, viewerId: PlayerId | null): GameVi
       consecutiveSkips: p.consecutiveSkips,
     })),
     deckCount: state.deck.length,
+    deckMemory: state.deck.map((role, i) => {
+      const seen = state.deckSeen?.[i] ?? null;
+      return seen === 'public' || (seen !== null && seen === viewer?.id) ? role : null;
+    }),
     phase: structuredCopy(phase),
     mandatoryCoup: state.phase.type === 'awaitingAction' && isMandatoryCoup(state),
     sequentialReactions: state.sequentialReactions ?? false,

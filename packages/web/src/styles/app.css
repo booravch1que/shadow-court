@@ -225,7 +225,7 @@ ul, ol { padding: 0; list-style: none; }
 /* the table: compact strip on mobile */
 .table { position: relative; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: stretch; padding: 8px; border-radius: var(--radius); background: radial-gradient(circle at 50% 40%, var(--felt), var(--felt-2)); border: 1px solid #2c5740; }
 .table-felt { display: none; }
-.table-center { order: -1; flex: 1 1 100%; text-align: center; padding: 6px; display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.table-center { position: relative; order: -1; flex: 1 1 100%; text-align: center; padding: 6px; display: flex; flex-direction: column; gap: 4px; align-items: center; }
 .center-note { font-weight: 600; }
 .center-meta { font-size: 12px; color: #8fb59f; }
 .seat {
@@ -260,6 +260,21 @@ ul, ol { padding: 0; list-style: none; }
 .pile-stack { display: flex; align-items: center; height: 58px; }
 .pile-stack > .card-back + .card-back { margin-left: -34px; margin-top: -4px; }
 .pile-stack > .card-back:nth-child(3) { margin-top: -8px; }
+.pile-deck { position: relative; }
+/* The seats are drawn after the centre of the table, so lift the centre above them while the deck is open. */
+.table-center:has(.deck-peek) { z-index: 5; }
+.pile-button { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; }
+.pile-known { position: absolute; top: -6px; right: -4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 999px; background: var(--gold); color: var(--ink); font-size: 11px; font-weight: 800; line-height: 18px; text-align: center; box-shadow: 0 2px 4px rgb(0 0 0 / 60%); }
+.deck-peek {
+  position: absolute; left: 0; bottom: calc(100% + 8px); z-index: 30; display: flex; align-items: center; gap: 8px;
+  width: max-content; max-width: calc(100vw - 32px); padding: 8px 10px; border-radius: 12px;
+  background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow); animation: pop .15s ease;
+}
+.deck-peek-end { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
+.deck-peek-cards { display: flex; align-items: center; margin: 0; padding: 0; list-style: none; min-width: 0; }
+.deck-peek-cards > li { display: inline-flex; }
+.deck-peek-cards > li + li { margin-left: -24px; }
+.deck-peek-cards > .deck-peek-known + li, .deck-peek-cards > li + .deck-peek-known { margin-left: 2px; }
 .bank-stack { padding-top: 12px; }
 .bank-stack .coin { width: 24px; height: 24px; filter: drop-shadow(0 2px 2px rgb(0 0 0 / 60%)); }
 .bank-stack .coin + .coin { margin-left: -14px; }

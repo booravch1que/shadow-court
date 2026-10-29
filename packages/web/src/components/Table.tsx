@@ -1,4 +1,5 @@
-import type { GameView } from '@shadow-court/engine';
+import type { GameView, Role } from '@shadow-court/engine';
+import { useEffect, useRef, useState } from 'react';
 import { nameIn } from '../controller';
 import { useApp, useT } from '../hooks';
 import { opponentsInOrder, seatPositions, type UiStatus } from '../logic/ui-state';
@@ -68,6 +69,76 @@ export function Table({ view, status }: { view: GameView; status: UiStatus }) {
   );
 }
 
+/**
+ * The draw pile. Hovering, focusing or tapping it lays the deck out from bottom to top, face up
+ * where the viewer already knows the card (it was shown to the table, or they put it back
+ * themselves) and face down everywhere else.
+ */
+function DeckPile({ count, memory }: { count: number; memory: (Role | null)[] }) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const known = memory.filter((role) => role !== null).length;
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: Event) => {
+      if (e instanceof KeyboardEvent ? e.key === 'Escape' : !ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('pointerdown', close);
+    document.addEventListener('keydown', close);
+    return () => {
+      document.removeEventListener('pointerdown', close);
+      document.removeEventListener('keydown', close);
+    };
+  }, [open]);
+
+  return (
+    <div
+      ref={ref}
+      className="pile pile-deck"
+      data-fx="deck"
+      onPointerEnter={(e) => e.pointerType === 'mouse' && setOpen(true)}
+      onPointerLeave={(e) => e.pointerType === 'mouse' && setOpen(false)}
+    >
+      <button
+        type="button"
+        className="pile-button"
+        aria-expanded={open}
+        aria-label={t('deck.peek', { count })}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="pile-stack">
+          <CardBack size="xs" />
+          <CardBack size="xs" />
+          <CardBack size="xs" />
+        </span>
+        {known > 0 && (
+          <span className="pile-known" title={t('deck.known', { count: known })}>
+            {known}
+          </span>
+        )}
+        <span className="pile-label">
+          {t('center.deckLabel')} · {count}
+        </span>
+      </button>
+      {open && count > 0 && (
+        <div className="deck-peek" role="dialog" aria-label={t('deck.title')}>
+          <span className="deck-peek-end">{t('deck.bottom')}</span>
+          <ol className="deck-peek-cards" reversed>
+            {[...memory].reverse().map((role, i) => (
+              <li key={i} className={role ? 'deck-peek-known' : undefined}>
+                {role ? <RoleCard role={role} size="xs" /> : <CardBack size="xs" />}
+              </li>
+            ))}
+          </ol>
+          <span className="deck-peek-end">{t('deck.top')}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** The deck, the bank, and every lost card face-up in the middle for all to see. */
 function Tabletop({ view }: { view: GameView }) {
   const t = useT();
@@ -82,16 +153,7 @@ function Tabletop({ view }: { view: GameView }) {
 
   return (
     <div className="tabletop">
-      <div className="pile" data-fx="deck">
-        <span className="pile-stack">
-          <CardBack size="xs" />
-          <CardBack size="xs" />
-          <CardBack size="xs" />
-        </span>
-        <span className="pile-label">
-          {t('center.deckLabel')} · {view.deckCount}
-        </span>
-      </div>
+      <DeckPile count={view.deckCount} memory={view.deckMemory} />
       <div className="discard" data-fx="discard" aria-label={t('center.discard')}>
         {lost.length === 0 ? (
           <span className="discard-empty">{t('center.discard')}</span>

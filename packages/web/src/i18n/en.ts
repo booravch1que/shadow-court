@@ -158,6 +158,12 @@ export const en: Dict = {
   'center.deckLabel': 'Deck',
   'center.bank': 'Bank',
   'center.discard': 'Out of play',
+  'deck.peek_one': 'Deck: {count} card. Show the order',
+  'deck.peek_other': 'Deck: {count} cards. Show the order',
+  'deck.title': 'The deck, bottom to top',
+  'deck.known': 'Cards you know in the deck: {count}',
+  'deck.top': 'Top',
+  'deck.bottom': 'Bottom',
 
   'fx.challenge': 'I doubt it!',
   'fx.bluff': 'Bluff!',
