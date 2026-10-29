@@ -125,11 +125,20 @@ export type Phase =
   | ExchangePhase
   | GameOverPhase;
 
+/** Who knows a deck card. See `GameState.deckSeen`. */
+export type DeckSeen = 'public' | PlayerId | null;
+
 export interface GameState {
   /** Seating order, clockwise. */
   players: PlayerState[];
   /** Hidden draw pile. Index 0 is the top. PRIVATE. */
   deck: Role[];
+  /**
+   * Who knows each deck card, index for index with `deck`: `'public'` for a card shown to the
+   * whole table, a player id for a card that player put back, `null` for an unknown card.
+   * Absent means nothing is known. PRIVATE.
+   */
+  deckSeen?: DeckSeen[];
   activePlayerId: PlayerId;
   /** Starts at 1 and increases with every turn. */
   turn: number;

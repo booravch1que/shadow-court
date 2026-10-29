@@ -68,6 +68,7 @@ export function createGame(options: CreateGameOptions): { state: GameState; even
   const state: GameState = {
     players,
     deck,
+    deckSeen: deck.map(() => null),
     activePlayerId: firstPlayerId,
     turn: 1,
     phase: { type: 'awaitingAction', windowId: 1 },

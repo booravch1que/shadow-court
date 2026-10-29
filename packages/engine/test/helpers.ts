@@ -202,6 +202,7 @@ export function assertInvariants(state: GameState): void {
   }
 
   assert.equal(held + state.deck.length + inExchange, expectedCards, 'card conservation violated');
+  if (state.deckSeen) assert.equal(state.deckSeen.length, state.deck.length, 'deckSeen must track the deck card for card');
   for (const role of ROLES) {
     assert.equal(counts.get(role), copiesPerRole(playerCount), `wrong number of ${role} cards`);
   }

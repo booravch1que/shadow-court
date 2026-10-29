@@ -28,6 +28,7 @@ import type {
   CoinCause,
   Command,
   Continuation,
+  DeckSeen,
   EngineError,
   EngineErrorCode,
   GameEvent,
@@ -349,8 +350,8 @@ function resolveChallenge(
 /** Deals a fresh card from the top in place of the shown one, which goes to the bottom of the deck. */
 function replaceCard(s: GameState, player: PlayerState, index: number): void {
   const shown = player.hand[index] as Role;
-  player.hand[index] = s.deck.shift() as Role;
-  s.deck.push(shown);
+  player.hand[index] = drawFromDeck(s, 1)[0] as Role;
+  putUnderDeck(s, [shown], 'public');
 }
 
 function handleBlock(
@@ -533,7 +534,7 @@ function eliminate(s: GameState, player: PlayerState, ev: Events): void {
     const winner = living[0] as PlayerState;
     // Cards drawn for an unfinished exchange live only in the phase: put them back
     // before it is replaced, so no card ever disappears.
-    if (s.phase.type === 'exchange') returnToDeck(s, s.phase.options.slice(s.phase.keep));
+    if (s.phase.type === 'exchange') returnToDeck(s, s.phase.playerId, s.phase.options.slice(s.phase.keep));
     s.phase = { type: 'gameOver', winnerId: winner.id };
     ev.push({ type: 'gameOver', winnerId: winner.id });
   }
@@ -596,7 +597,7 @@ function endTurn(s: GameState, ev: Events): void {
 // ---------------------------------------------------------------------------
 
 function startExchange(s: GameState, actor: PlayerState, ev: Events): void {
-  const drawn = s.deck.splice(0, EXCHANGE_DRAW);
+  const drawn = drawFromDeck(s, EXCHANGE_DRAW);
   s.phase = {
     type: 'exchange',
     windowId: nextWindowId(s),
@@ -607,9 +608,27 @@ function startExchange(s: GameState, actor: PlayerState, ev: Events): void {
   ev.push({ type: 'exchangeStarted', playerId: actor.id });
 }
 
-/** Puts returned cards at the bottom of the deck; the order of the rest of the deck is kept. */
-function returnToDeck(s: GameState, cards: Role[]): void {
+/** Puts the Shaman's returned cards at the bottom of the deck, where only they know them. */
+function returnToDeck(s: GameState, playerId: PlayerId, cards: Role[]): void {
+  putUnderDeck(s, cards, playerId);
+}
+
+/** Takes cards off the top. What anyone knew about them leaves the deck with them. */
+function drawFromDeck(s: GameState, count: number): Role[] {
+  s.deckSeen = seenOf(s);
+  s.deckSeen.splice(0, count);
+  return s.deck.splice(0, count);
+}
+
+/** Adds cards to the bottom in order; the order of the rest of the deck is kept. */
+function putUnderDeck(s: GameState, cards: Role[], seen: DeckSeen): void {
+  s.deckSeen = seenOf(s);
   s.deck.push(...cards);
+  s.deckSeen.push(...cards.map(() => seen));
+}
+
+function seenOf(s: GameState): DeckSeen[] {
+  return s.deckSeen ?? s.deck.map(() => null);
 }
 
 /** True when `keep` is a sub-multiset of `options`. */
@@ -639,7 +658,7 @@ function handleChooseExchange(
   const leftover = [...phase.options];
   for (const role of command.keep) leftover.splice(leftover.indexOf(role), 1);
   player.hand = [...command.keep];
-  returnToDeck(s, leftover);
+  returnToDeck(s, player.id, leftover);
   ev.push({ type: 'exchangeCompleted', playerId: player.id });
   endTurn(s, ev);
   return null;
@@ -685,7 +704,7 @@ function handleTimeout(
     case 'exchange':
       // Keep the original hand; the drawn cards go back.
       ev.push({ type: 'timedOut', playerId: phase.playerId, during: 'exchange' });
-      returnToDeck(s, phase.options.slice(phase.keep));
+      returnToDeck(s, phase.playerId, phase.options.slice(phase.keep));
       ev.push({ type: 'exchangeCompleted', playerId: phase.playerId });
       endTurn(s, ev);
       return null;
@@ -777,7 +796,7 @@ function repairPhaseAfterElimination(s: GameState, id: PlayerId, ev: Events): vo
 
     case 'exchange':
       if (phase.playerId === id) {
-        returnToDeck(s, phase.options.slice(phase.keep));
+        returnToDeck(s, phase.playerId, phase.options.slice(phase.keep));
         endTurn(s, ev);
       }
       return;
