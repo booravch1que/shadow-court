@@ -235,7 +235,7 @@ export type GameEvent =
     }
   /** The accused showed the claimed card as proof. */
   | { type: 'cardRevealed'; playerId: PlayerId; role: Role }
-  /** The shown card went back into the deck and was replaced by a random one. */
+  /** The shown card went to the bottom of the deck and was replaced by the top card. */
   | { type: 'cardReplaced'; playerId: PlayerId }
   | { type: 'actionCancelled'; actorId: PlayerId; action: ActionType; reason: CancelReason }
   | {

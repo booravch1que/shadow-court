@@ -267,10 +267,10 @@ describe('Exchange (Shaman)', () => {
       .pass('B');
     assert.deepEqual(g2.phase.type === 'exchange' && g2.phase.options, ['governor', 'thief', 'assassin', 'duchess']);
     assertInvariants(g2.state);
-    const deckBefore = g2.state.deck.length;
+    const deckBefore = [...g2.state.deck];
     g2.exchange('A', ['assassin', 'governor']);
     assert.deepEqual([...g2.player('A').hand].sort(), ['assassin', 'governor']);
-    assert.equal(g2.state.deck.length, deckBefore + 2);
+    assert.deepEqual(g2.state.deck, [...deckBefore, 'thief', 'duchess'], 'returned cards go to the bottom, order kept');
     assert.equal(g2.state.activePlayerId, 'B');
     assertInvariants(g2.state);
   });
