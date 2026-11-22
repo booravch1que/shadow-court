@@ -1,5 +1,6 @@
-import { NICKNAME_MAX, NICKNAME_MIN, normalizeNickname, normalizeRoomCode } from '@shadow-court/protocol';
+import { AVATARS, NICKNAME_MAX, NICKNAME_MIN, normalizeNickname, normalizeRoomCode } from '@shadow-court/protocol';
 import { useState } from 'react';
+import { Avatar } from '../components/Avatar';
 import { useApp, useController, useT } from '../hooks';
 
 const HOW = ['goal', 'turn', 'bluff', 'challenge', 'block', 'coins'] as const;
@@ -8,6 +9,7 @@ export function Home() {
   const t = useT();
   const app = useController();
   const savedNick = useApp((s) => s.nickname);
+  const avatar = useApp((s) => s.avatar);
   const invite = useApp((s) => s.inviteCode);
   const conn = useApp((s) => s.conn);
   const rejoining = useApp((s) => s.rejoining);
@@ -38,6 +40,26 @@ export function Home() {
           />
           <span className="field-hint">{t('home.nicknameHint', { min: NICKNAME_MIN, max: NICKNAME_MAX })}</span>
         </label>
+
+        <div className="field">
+          <span className="field-label" id="avatar-label">{t('home.avatar')}</span>
+          <div className="avatar-picker" role="radiogroup" aria-labelledby="avatar-label">
+            {AVATARS.map((id) => (
+              <button
+                key={id}
+                type="button"
+                role="radio"
+                aria-checked={avatar === id}
+                aria-label={t(`avatar.${id}`)}
+                title={t(`avatar.${id}`)}
+                className={`avatar-option${avatar === id ? ' on' : ''}`}
+                onClick={() => app.setAvatar(id)}
+              >
+                <Avatar id={id} size="lg" />
+              </button>
+            ))}
+          </div>
+        </div>
 
         {invite && <p className="invite-note">{t('home.invited', { code: invite })}</p>}
 

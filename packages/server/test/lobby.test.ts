@@ -24,6 +24,24 @@ describe('creating and joining', () => {
     assert.deepEqual(guest.room, clients[0]?.room);
   });
 
+  it('shows everyone the avatar each participant picked, and allows the same one twice', () => {
+    const { server, clients, code } = setup(1, { start: false });
+    const fox1 = new Client(server).send('room:join', { code, nickname: 'Ann', avatar: 'fox' });
+    new Client(server).send('room:join', { code, nickname: 'Bob', avatar: 'fox' });
+    assert.deepEqual(fox1.room.participants.map((p) => p.avatar), ['king', 'fox', 'fox']);
+    assert.deepEqual(clients[0]?.room.participants.map((p) => p.avatar), ['king', 'fox', 'fox']);
+  });
+
+  it('lets only the host pick the card deck for the room', () => {
+    const { clients } = setup(2, { start: false });
+    const [host, guest] = clients as [Client, Client];
+    assert.equal(guest.room.settings.cardStyle, 'classic');
+    guest.send('lobby:settings', { cardStyle: 'noir' });
+    assert.equal(guest.lastError?.code, 'not_host');
+    host.send('lobby:settings', { cardStyle: 'sakura' });
+    assert.equal(guest.room.settings.cardStyle, 'sakura');
+  });
+
   it('never gives two participants the same id or token', () => {
     const { clients } = setup(6, { start: false });
     assert.equal(new Set(clients.map((c) => c.selfId)).size, 6);
@@ -132,7 +150,7 @@ describe('lobby controls', () => {
     guest.send('lobby:settings', { timerPreset: 'fast' });
     assert.equal(guest.lastError?.code, 'not_host');
     host.send('lobby:settings', { timerPreset: 'fast', allowSpectators: false });
-    assert.deepEqual(guest.room.settings, { timerPreset: 'fast', allowSpectators: false, sequentialReactions: false });
+    assert.deepEqual(guest.room.settings, { timerPreset: 'fast', allowSpectators: false, sequentialReactions: false, cardStyle: 'classic' });
     host.send('lobby:settings', { sequentialReactions: true });
     assert.equal(guest.room.settings.sequentialReactions, true);
     host.send('lobby:start');

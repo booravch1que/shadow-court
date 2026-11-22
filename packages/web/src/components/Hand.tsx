@@ -1,5 +1,6 @@
 import type { GameView } from '@shadow-court/engine';
-import { nameIn } from '../controller';
+import { avatarIn, nameIn } from '../controller';
+import { Avatar } from './Avatar';
 import { useApp, useT } from '../hooks';
 import { relationOf } from '../logic/ui-state';
 import { CoinCount, RoleCard } from './Cards';
@@ -20,7 +21,10 @@ export function Hand({ view }: { view: GameView }) {
   return (
     <div className="hand">
       <div className="hand-info">
-        <span className="hand-name">{nameIn(room, me.id)}</span>
+        <span className="hand-name">
+          <Avatar id={avatarIn(room, me.id)} size="md" />
+          {nameIn(room, me.id)}
+        </span>
         <span data-fx={`coins:${me.id}`}>
           <CoinCount value={me.coins - coinLag} big />
         </span>

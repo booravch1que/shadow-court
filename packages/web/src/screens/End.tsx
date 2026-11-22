@@ -1,5 +1,6 @@
 import type { GameView } from '@shadow-court/engine';
-import { nameIn } from '../controller';
+import { avatarIn, nameIn } from '../controller';
+import { Avatar } from '../components/Avatar';
 import { RoleCard } from '../components/Cards';
 import { useApp, useController, useT } from '../hooks';
 
@@ -29,7 +30,10 @@ export function End({ view }: { view: GameView }) {
         <ul className="standings">
           {standings.map((p) => (
             <li key={p.id} className={`standing${p.id === winnerId ? ' winner' : ''}`}>
-              <span className="standing-name">{nameIn(room, p.id)}</span>
+              <span className="standing-name">
+                <Avatar id={avatarIn(room, p.id)} size="md" />
+                {nameIn(room, p.id)}
+              </span>
               <span className="standing-cards">
                 {p.revealed.map((role, i) => <RoleCard key={i} role={role} size="xs" state="lost" />)}
               </span>

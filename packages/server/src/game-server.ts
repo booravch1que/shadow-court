@@ -1,5 +1,5 @@
 import type { PlayerId } from '@shadow-court/engine';
-import { CODE_ALPHABET, CODE_LENGTH, parseClientMessage } from '@shadow-court/protocol';
+import { CODE_ALPHABET, CODE_LENGTH, DEFAULT_AVATAR, parseClientMessage } from '@shadow-court/protocol';
 import {
   DEFAULT_CONFIG,
   cryptoRandom,
@@ -72,7 +72,7 @@ export class GameServer {
         const early = this.guardAttempt(state);
         if (early) return this.reply(state, early);
         const room = this.createRoom();
-        const result = room.join(state.conn, message.data.nickname);
+        const result = room.join(state.conn, message.data.nickname, message.data.avatar ?? DEFAULT_AVATAR);
         return this.reply(state, result);
       }
       case 'room:join': {
@@ -80,7 +80,7 @@ export class GameServer {
         if (early) return this.reply(state, early);
         const room = this.rooms.get(message.data.code);
         if (!room) return this.reply(state, { ok: false, code: 'room_not_found', message: 'No room has that code.' });
-        return this.reply(state, room.join(state.conn, message.data.nickname));
+        return this.reply(state, room.join(state.conn, message.data.nickname, message.data.avatar ?? DEFAULT_AVATAR));
       }
       case 'room:rejoin': {
         const early = this.guardAttempt(state);

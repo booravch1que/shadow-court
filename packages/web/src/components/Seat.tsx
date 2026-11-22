@@ -2,6 +2,7 @@ import type { PublicPlayer } from '@shadow-court/engine';
 import type { PublicParticipant } from '@shadow-court/protocol';
 import type { CSSProperties } from 'react';
 import { useT } from '../hooks';
+import { Avatar } from './Avatar';
 import { CardBack, CoinCount } from './Cards';
 import { useLag } from './Fx';
 
@@ -60,6 +61,7 @@ export function Seat(props: SeatProps) {
       data-fx={`seat:${player.id}`}
     >
       <div className="seat-head">
+        {participant && <Avatar id={participant.avatar} size="sm" />}
         {participant?.isHost && <span className="crown" title={t('lobby.host')}>♛</span>}
         <span className="seat-name">{props.name}</span>
       </div>

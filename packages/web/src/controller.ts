@@ -1,12 +1,14 @@
 import type { GameEvent, GameView, PlayerId } from '@shadow-court/engine';
-import type {
-  ClientCommand,
-  ClientEventName,
-  Emote,
-  RoomSettings,
-  RoomStateData,
-  ServerMessage,
-  ServerPayloads,
+import {
+  AVATARS,
+  type AvatarId,
+  type ClientCommand,
+  type ClientEventName,
+  type Emote,
+  type RoomSettings,
+  type RoomStateData,
+  type ServerMessage,
+  type ServerPayloads,
 } from '@shadow-court/protocol';
 import { detectLang, type Lang } from './i18n';
 import { soundCues, type SoundCue } from './logic/describe';
@@ -38,6 +40,7 @@ export interface AppState {
   lang: Lang;
   sound: boolean;
   nickname: string;
+  avatar: AvatarId;
   /** Room code from an invitation link, to prefill the join form. */
   inviteCode: string;
   joined: ServerPayloads['room:joined'] | null;
@@ -69,7 +72,7 @@ export interface AppEnv {
   initialInvite?: string;
 }
 
-const KEY = { session: 'sc.session', nick: 'sc.nick', lang: 'sc.lang', sound: 'sc.sound' } as const;
+const KEY = { session: 'sc.session', nick: 'sc.nick', avatar: 'sc.avatar', lang: 'sc.lang', sound: 'sc.sound' } as const;
 const MAX_LOG = 400;
 const TOAST_MS = 4500;
 const EMOTE_MS = 3200;
@@ -84,6 +87,7 @@ export class AppController {
       lang: detectLang(env.storage.getItem(KEY.lang), env.browserLanguage),
       sound: env.storage.getItem(KEY.sound) === '1',
       nickname: env.storage.getItem(KEY.nick) ?? '',
+      avatar: this.loadAvatar(),
       inviteCode: (env.initialInvite ?? '').toUpperCase(),
       joined: null,
       room: null,
@@ -200,14 +204,19 @@ export class AppController {
     this.store.set({ nickname });
   }
 
+  setAvatar(avatar: AvatarId): void {
+    this.env.storage.setItem(KEY.avatar, avatar);
+    this.store.set({ avatar });
+  }
+
   createRoom(nickname: string): void {
     this.setNickname(nickname);
-    this.env.send('room:create', { nickname });
+    this.env.send('room:create', { nickname, avatar: this.store.get().avatar });
   }
 
   joinRoom(code: string, nickname: string): void {
     this.setNickname(nickname);
-    this.env.send('room:join', { code, nickname });
+    this.env.send('room:join', { code, nickname, avatar: this.store.get().avatar });
   }
 
   leaveRoom(): void {
@@ -263,6 +272,15 @@ export class AppController {
     this.env.onUrlChange?.(null);
   }
 
+  /** The saved portrait, or a random one on the first visit (remembered from then on). */
+  private loadAvatar(): AvatarId {
+    const saved = this.env.storage.getItem(KEY.avatar);
+    if (saved && (AVATARS as readonly string[]).includes(saved)) return saved as AvatarId;
+    const pick = AVATARS[Math.floor(Math.random() * AVATARS.length)] ?? AVATARS[0];
+    this.env.storage.setItem(KEY.avatar, pick);
+    return pick;
+  }
+
   private saveSession(session: { code: string; token: string }): void {
     this.env.storage.setItem(KEY.session, JSON.stringify(session));
   }
@@ -284,6 +302,11 @@ export class AppController {
     }
     return null;
   }
+}
+
+/** Portrait for a participant id, with a harmless fallback. */
+export function avatarIn(room: RoomStateData | null, id: PlayerId): AvatarId {
+  return room?.participants.find((p) => p.id === id)?.avatar ?? AVATARS[0];
 }
 
 /** Nickname for a participant id, with a harmless fallback. */

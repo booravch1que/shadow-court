@@ -1,14 +1,16 @@
 import type { Role } from '@shadow-court/engine';
 import { nameIn } from '../controller';
-import { useApp, useT } from '../hooks';
+import { iconMode } from '../art/card-art';
+import { useApp, useCardStyle, useT } from '../hooks';
 import type { Claim } from '../logic/ui-state';
 import { RoleArt } from './RoleArt';
 
 /** A small round role emblem with its name. */
 export function RoleChip({ role }: { role: Role }) {
   const t = useT();
+  const style = useCardStyle();
   return (
-    <span className={`role-chip role-${role}`}>
+    <span className={`role-chip role-${role} icon-${iconMode(style)}`}>
       <RoleArt role={role} className="role-chip-art" />
       <span className="sr-only">{t(`role.${role}`)}</span>
     </span>

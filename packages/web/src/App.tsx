@@ -1,5 +1,7 @@
+import type { CSSProperties } from 'react';
+import { cardStyleVars } from './art/card-art';
 import { TopBar, Toasts } from './components/Chrome';
-import { useApp, useT } from './hooks';
+import { useApp, useCardStyle, useT } from './hooks';
 import { Game } from './screens/Game';
 import { Home } from './screens/Home';
 import { Lobby } from './screens/Lobby';
@@ -9,6 +11,7 @@ export function App() {
   const joined = useApp((s) => s.joined);
   const room = useApp((s) => s.room);
   const lang = useApp((s) => s.lang);
+  const cardStyle = useCardStyle();
 
   if (typeof document !== 'undefined') document.documentElement.lang = lang;
 
@@ -19,7 +22,7 @@ export function App() {
   else screen = <Game />;
 
   return (
-    <div className="app">
+    <div className="app" style={cardStyleVars(cardStyle) as CSSProperties}>
       <TopBar />
       {screen}
       <Toasts />
