@@ -270,6 +270,10 @@ ul, ol { padding: 0; list-style: none; }
   width: max-content; max-width: calc(100vw - 32px); padding: 8px 10px; border-radius: 12px;
   background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow); animation: pop .15s ease;
 }
+/* On the mobile strip the deck sits at the very top of the table, so open the peek downwards. */
+@media (max-width: 899px) {
+  .deck-peek { bottom: auto; top: calc(100% + 8px); flex-wrap: wrap; justify-content: center; }
+}
 .deck-peek-end { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
 .deck-peek-cards { display: flex; align-items: center; margin: 0; padding: 0; list-style: none; min-width: 0; }
 .deck-peek-cards > li { display: inline-flex; }
