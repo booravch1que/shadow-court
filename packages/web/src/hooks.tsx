@@ -1,4 +1,5 @@
-import { createContext, useContext, useMemo, useSyncExternalStore, type ReactNode } from 'react';
+import { DEFAULT_CARD_STYLE, type CardStyle } from '@shadow-court/protocol';
+import { createContext, useContext, useId, useMemo, useSyncExternalStore, type ReactNode } from 'react';
 import type { AppController, AppState } from './controller';
 import { makeT, type TFn } from './i18n';
 
@@ -23,4 +24,14 @@ export function useApp<T>(selector: (state: AppState) => T): T {
 export function useT(): TFn {
   const lang = useApp((s) => s.lang);
   return useMemo(() => makeT(lang), [lang]);
+}
+
+/** Card design chosen for the current room (the default one outside a room). */
+export function useCardStyle(): CardStyle {
+  return useApp((s) => s.room?.settings.cardStyle ?? DEFAULT_CARD_STYLE);
+}
+
+/** A per-instance id that is safe inside SVG `url(#...)` references. */
+export function useSvgId(): string {
+  return `s${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
 }

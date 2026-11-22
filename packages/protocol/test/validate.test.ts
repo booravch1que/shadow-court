@@ -41,7 +41,7 @@ describe('parseClientMessage', () => {
   it('accepts well-formed messages and normalizes them', () => {
     assert.deepEqual(parse('room:join', { code: 'abcde', nickname: ' Zoe ' }), {
       ok: true,
-      value: { event: 'room:join', data: { code: 'ABCDE', nickname: 'Zoe' } },
+      value: { event: 'room:join', data: { code: 'ABCDE', nickname: 'Zoe', avatar: 'king' } },
     });
     assert.equal(parse('room:leave').ok, true);
     assert.equal(parse('lobby:start', null).ok, true);
@@ -61,6 +61,18 @@ describe('parseClientMessage', () => {
     assert.equal(parse('lobby:settings', { allowSpectators: 'yes' }).ok, false);
     assert.equal(parse('lobby:settings', { sequentialReactions: true }).ok, true);
     assert.equal(parse('lobby:settings', { sequentialReactions: 1 }).ok, false);
+    assert.deepEqual(parse('lobby:settings', { cardStyle: 'noir' }), { ok: true, value: { event: 'lobby:settings', data: { cardStyle: 'noir' } } });
+    assert.equal(parse('lobby:settings', { cardStyle: 'neon' }).ok, false);
+    assert.equal(parse('lobby:settings', { cardStyle: 3 }).ok, false);
+  });
+
+  it('accepts a known avatar, defaults a missing one and rejects anything else', () => {
+    const create = parse('room:create', { nickname: 'Zoe', avatar: 'fox' });
+    assert.ok(create.ok && create.value.event === 'room:create' && create.value.data.avatar === 'fox');
+    const join = parse('room:join', { code: 'ABCDE', nickname: 'Zoe', avatar: 'owl' });
+    assert.ok(join.ok && join.value.event === 'room:join' && join.value.data.avatar === 'owl');
+    assert.equal(parse('room:create', { nickname: 'Zoe', avatar: 'dragon' }).ok, false);
+    assert.equal(parse('room:join', { code: 'ABCDE', nickname: 'Zoe', avatar: 7 }).ok, false);
   });
 
   it('validates emotes', () => {

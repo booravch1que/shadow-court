@@ -8,15 +8,17 @@ import {
   type PlayerCommand,
   type PlayerId,
 } from '@shadow-court/engine';
-import type {
-  ClientCommand,
-  Emote,
-  ParticipantKind,
-  PublicParticipant,
-  RoomSettings,
-  RoomStateData,
-  RoomStatus,
-  ServerMessage,
+import {
+  DEFAULT_CARD_STYLE,
+  type AvatarId,
+  type ClientCommand,
+  type Emote,
+  type ParticipantKind,
+  type PublicParticipant,
+  type RoomSettings,
+  type RoomStateData,
+  type RoomStatus,
+  type ServerMessage,
 } from '@shadow-court/protocol';
 import { TIMER_MULTIPLIER, type Connection, type ServerDeps, type TimerHandle } from './deps';
 
@@ -29,6 +31,7 @@ interface Participant {
   /** Secret that proves ownership of this seat after a reconnect. */
   token: string;
   nickname: string;
+  avatar: AvatarId;
   kind: ParticipantKind;
   conn: Connection | null;
   connectedSince: number | null;
@@ -53,7 +56,7 @@ export interface RoomHooks {
  */
 export class Room {
   status: RoomStatus = 'lobby';
-  settings: RoomSettings = { timerPreset: 'standard', allowSpectators: true, sequentialReactions: false };
+  settings: RoomSettings = { timerPreset: 'standard', allowSpectators: true, sequentialReactions: false, cardStyle: DEFAULT_CARD_STYLE };
 
   private readonly participants = new Map<PlayerId, Participant>();
   private readonly byToken = new Map<string, PlayerId>();
@@ -74,7 +77,7 @@ export class Room {
   // Joining, leaving, reconnecting
   // -------------------------------------------------------------------------
 
-  join(conn: Connection, nickname: string): RoomResult {
+  join(conn: Connection, nickname: string, avatar: AvatarId): RoomResult {
     const wanted = nickname.toLowerCase();
     for (const p of this.participants.values()) {
       if (p.nickname.toLowerCase() === wanted) return fail('nickname_taken', 'That nickname is already used in this room.');
@@ -96,6 +99,7 @@ export class Room {
       id: this.deps.random.hex(6),
       token: this.deps.random.hex(24),
       nickname,
+      avatar,
       kind,
       conn: null,
       connectedSince: null,
@@ -452,6 +456,7 @@ export class Room {
     const participants: PublicParticipant[] = [...this.participants.values()].map((p) => ({
       id: p.id,
       nickname: p.nickname,
+      avatar: p.avatar,
       kind: p.kind,
       connected: p.conn !== null,
       away: p.away,

@@ -10,6 +10,22 @@ export type TimerPreset = (typeof TIMER_PRESETS)[number];
 export const EMOTES = ['👍', '😂', '😱', '🤔', '👏', '😈'] as const;
 export type Emote = (typeof EMOTES)[number];
 
+/** Portraits a player can pick when entering a room. Several players may share one. */
+export const AVATARS = [
+  'king', 'queen', 'knight', 'jester', 'monk', 'witch', 'bard', 'alchemist',
+  'pirate', 'plague', 'fox', 'raven', 'cat', 'owl', 'mask',
+] as const;
+export type AvatarId = (typeof AVATARS)[number];
+export const DEFAULT_AVATAR: AvatarId = 'king';
+
+/** Card designs (backs and faces always go together). The host picks one for the whole room. */
+export const CARD_STYLES = [
+  'classic', 'crimson', 'moon', 'forest', 'noir', 'frost', 'ember',
+  'sea', 'amethyst', 'spectral', 'desert', 'sakura', 'clockwork',
+] as const;
+export type CardStyle = (typeof CARD_STYLES)[number];
+export const DEFAULT_CARD_STYLE: CardStyle = 'classic';
+
 export const NICKNAME_MIN = 2;
 export const NICKNAME_MAX = 16;
 
@@ -45,11 +61,11 @@ export type ClientCommand =
   | { type: 'chooseExchange'; windowId: number; keep: Role[] };
 
 export interface ClientPayloads {
-  'room:create': { nickname: string };
-  'room:join': { code: string; nickname: string };
+  'room:create': { nickname: string; avatar?: AvatarId };
+  'room:join': { code: string; nickname: string; avatar?: AvatarId };
   'room:rejoin': { code: string; token: string };
   'room:leave': Record<string, never>;
-  'lobby:settings': { timerPreset?: TimerPreset; allowSpectators?: boolean; sequentialReactions?: boolean };
+  'lobby:settings': Partial<RoomSettings>;
   'lobby:start': Record<string, never>;
   'room:kick': { playerId: PlayerId };
   'game:command': { command: ClientCommand };
@@ -75,11 +91,14 @@ export interface RoomSettings {
   allowSpectators: boolean;
   /** Reactions are asked one player at a time, clockwise, instead of all at once. */
   sequentialReactions: boolean;
+  /** Card design everybody in the room sees. */
+  cardStyle: CardStyle;
 }
 
 export interface PublicParticipant {
   id: PlayerId;
   nickname: string;
+  avatar: AvatarId;
   kind: ParticipantKind;
   connected: boolean;
   /** Missed three timers in a row. The host may remove them. */

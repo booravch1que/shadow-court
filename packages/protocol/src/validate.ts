@@ -1,15 +1,21 @@
 import { ROLES, type Role } from '@shadow-court/engine';
 import {
   ACTION_TYPES,
+  AVATARS,
   CODE_ALPHABET,
+  CARD_STYLES,
+  DEFAULT_AVATAR,
   CODE_LENGTH,
   EMOTES,
   NICKNAME_MAX,
   NICKNAME_MIN,
   TIMER_PRESETS,
   type ClientCommand,
+  type AvatarId,
   type ClientMessage,
+  type CardStyle,
   type Emote,
+  type RoomSettings,
   type TimerPreset,
 } from './events';
 
@@ -56,6 +62,14 @@ export function normalizeNickname(raw: unknown): Parsed<string> {
     return bad('Nickname may only contain letters, digits, spaces and _ . \' -');
   }
   return ok(name);
+}
+
+/** A missing avatar falls back to the default, so older clients can still join. */
+function parseAvatar(value: unknown): Parsed<AvatarId> {
+  if (value === undefined || value === null) return ok(DEFAULT_AVATAR);
+  return typeof value === 'string' && (AVATARS as readonly string[]).includes(value)
+    ? ok(value as AvatarId)
+    : bad('Unknown avatar.');
 }
 
 /** Uppercases and trims a room code. Returns an error if it cannot be a valid code. */
@@ -128,13 +142,17 @@ export function parseClientMessage(event: unknown, payload: unknown): Parsed<Cli
   switch (event) {
     case 'room:create': {
       const nickname = normalizeNickname(data['nickname']);
-      return nickname.ok ? ok({ event, data: { nickname: nickname.value } }) : nickname;
+      if (!nickname.ok) return nickname;
+      const avatar = parseAvatar(data['avatar']);
+      return avatar.ok ? ok({ event, data: { nickname: nickname.value, avatar: avatar.value } }) : avatar;
     }
     case 'room:join': {
       const code = normalizeRoomCode(data['code']);
       if (!code.ok) return code;
       const nickname = normalizeNickname(data['nickname']);
-      return nickname.ok ? ok({ event, data: { code: code.value, nickname: nickname.value } }) : nickname;
+      if (!nickname.ok) return nickname;
+      const avatar = parseAvatar(data['avatar']);
+      return avatar.ok ? ok({ event, data: { code: code.value, nickname: nickname.value, avatar: avatar.value } }) : avatar;
     }
     case 'room:rejoin': {
       const code = normalizeRoomCode(data['code']);
@@ -150,7 +168,7 @@ export function parseClientMessage(event: unknown, payload: unknown): Parsed<Cli
     case 'room:playAgain':
       return ok({ event, data: {} });
     case 'lobby:settings': {
-      const out: { timerPreset?: TimerPreset; allowSpectators?: boolean; sequentialReactions?: boolean } = {};
+      const out: Partial<RoomSettings> = {};
       if (data['timerPreset'] !== undefined) {
         const preset = data['timerPreset'];
         if (typeof preset !== 'string' || !(TIMER_PRESETS as readonly string[]).includes(preset)) {
@@ -165,6 +183,11 @@ export function parseClientMessage(event: unknown, payload: unknown): Parsed<Cli
       if (data['sequentialReactions'] !== undefined) {
         if (typeof data['sequentialReactions'] !== 'boolean') return bad('sequentialReactions must be true or false.');
         out.sequentialReactions = data['sequentialReactions'];
+      }
+      if (data['cardStyle'] !== undefined) {
+        const style = data['cardStyle'];
+        if (typeof style !== 'string' || !(CARD_STYLES as readonly string[]).includes(style)) return bad('Unknown card style.');
+        out.cardStyle = style as CardStyle;
       }
       return ok({ event, data: out });
     }

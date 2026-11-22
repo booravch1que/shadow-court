@@ -1,5 +1,7 @@
 import type { Role } from '@shadow-court/engine';
-import { useT } from '../hooks';
+import type { CardStyle } from '@shadow-court/protocol';
+import { backSvg, frameSvg, iconMode } from '../art/card-art';
+import { useCardStyle, useSvgId, useT } from '../hooks';
 import { RoleArt } from './RoleArt';
 
 export type CardSize = 'xs' | 'sm' | 'md' | 'lg';
@@ -14,20 +16,35 @@ interface RoleCardProps {
   /** Extra line under the card, e.g. "Lose this". */
   caption?: string;
   className?: string;
+  /** Show this design instead of the room's one (for previews). */
+  cardStyle?: CardStyle;
 }
 
 /** A face-up role card. Clickable when `onClick` is given. */
-export function RoleCard({ role, size = 'md', state = 'normal', onClick, disabled, caption, className }: RoleCardProps) {
+export function RoleCard({ role, size = 'md', state = 'normal', onClick, disabled, caption, className, cardStyle }: RoleCardProps) {
   const t = useT();
+  const roomStyle = useCardStyle();
+  const style = cardStyle ?? roomStyle;
+  const frame = size === 'xs' ? '' : frameSvg(style);
   const body = (
     <>
+      {frame && (
+        <svg
+          className="card-frame"
+          viewBox="0 0 86 124"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+          focusable="false"
+          dangerouslySetInnerHTML={{ __html: frame }}
+        />
+      )}
       <span className="card-name">{t(`role.${role}`)}</span>
-      <RoleArt role={role} className="card-art" />
+      <RoleArt role={role} className="card-art" cardStyle={style} />
       {(size === 'md' || size === 'lg') && <span className="card-blurb">{t(`role.${role}.blurb`)}</span>}
       {state === 'lost' && <span className="card-lost-mark">{t('card.lost')}</span>}
     </>
   );
-  const cls = `card role-${role} size-${size} state-${state}${onClick ? ' is-button' : ''}${className ? ` ${className}` : ''}`;
+  const cls = `card role-${role} size-${size} state-${state} icon-${iconMode(style)}${onClick ? ' is-button' : ''}${className ? ` ${className}` : ''}`;
   return (
     <span className="card-slot">
       {onClick ? (
@@ -45,16 +62,19 @@ export function RoleCard({ role, size = 'md', state = 'normal', onClick, disable
 }
 
 /** A face-down card. */
-export function CardBack({ size = 'sm' }: { size?: CardSize }) {
+export function CardBack({ size = 'sm', cardStyle }: { size?: CardSize; cardStyle?: CardStyle }) {
   const t = useT();
+  const roomStyle = useCardStyle();
+  const uid = useSvgId();
   return (
     <span className={`card card-back size-${size}`} role="img" aria-label={t('card.hidden')}>
-      <svg viewBox="0 0 60 80" aria-hidden="true" focusable="false">
-        <rect x="5" y="5" width="50" height="70" rx="5" className="back-frame" />
-        <path d="M30 18 L37 34 L30 50 L23 34 Z" className="back-gem" />
-        <path d="M14 66 L46 66 M14 14 L46 14" className="back-line" />
-        <circle cx="30" cy="34" r="3" className="back-eye" />
-      </svg>
+      <svg
+        viewBox="0 0 60 84"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+        focusable="false"
+        dangerouslySetInnerHTML={{ __html: backSvg(cardStyle ?? roomStyle, uid) }}
+      />
     </span>
   );
 }

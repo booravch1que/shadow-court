@@ -1,6 +1,9 @@
-import { TIMER_PRESETS, type PublicParticipant, type TimerPreset } from '@shadow-court/protocol';
-import { useState } from 'react';
+import { CARD_STYLES, TIMER_PRESETS, type CardStyle, type PublicParticipant, type TimerPreset } from '@shadow-court/protocol';
+import { useState, type CSSProperties } from 'react';
+import { cardStyleVars } from '../art/card-art';
 import { copyText, inviteLink } from '../clipboard';
+import { Avatar } from '../components/Avatar';
+import { CardBack, RoleCard } from '../components/Cards';
 import { useApp, useController, useT } from '../hooks';
 
 export function Lobby() {
@@ -20,6 +23,7 @@ export function Lobby() {
   const row = (p: PublicParticipant) => (
     <li key={p.id} className={`who${p.connected ? '' : ' who-off'}`}>
       <span className="who-name">
+        <Avatar id={p.avatar} size="md" />
         {p.isHost && <span className="crown" title={t('lobby.host')}>♛</span>}
         {p.nickname}
         {p.id === joined.selfId && <span className="tag tag-you">{t('lobby.you')}</span>}
@@ -106,6 +110,35 @@ export function Lobby() {
           <span>{t('lobby.sequential')}</span>
         </label>
         <span className="field-hint">{t('lobby.sequential.hint')}</span>
+      </section>
+
+      <section className="sheet">
+        <h2 className="sheet-title" id="style-title">{t('lobby.cardStyle')}</h2>
+        <p className="field-hint style-hint">{isHost ? t('lobby.cardStyle.hint') : t('lobby.cardStyle.hostOnly')}</p>
+        <div className="style-picker" role="radiogroup" aria-labelledby="style-title">
+          {CARD_STYLES.map((id: CardStyle) => {
+            const on = room.settings.cardStyle === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                disabled={!isHost && !on}
+                className={`style-option${on ? ' on' : ''}`}
+                style={cardStyleVars(id) as CSSProperties}
+                onClick={() => isHost && !on && app.updateSettings({ cardStyle: id })}
+              >
+                <span className="style-cards" aria-hidden="true">
+                  <CardBack size="sm" cardStyle={id} />
+                  <RoleCard role="governor" size="sm" cardStyle={id} />
+                  <RoleCard role="shaman" size="sm" cardStyle={id} />
+                </span>
+                <span className="style-name">{t(`style.${id}`)}</span>
+              </button>
+            );
+          })}
+        </div>
       </section>
 
       <div className="lobby-actions">
